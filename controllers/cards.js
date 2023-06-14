@@ -9,12 +9,22 @@ const createCard = (req, res) => {
 
   return Card.create({ name, link, owner })
     .then((newCard) => res.status(201).send(newCard))
-    .catch(() => res.status(500).send({ message: 'Произошла ошибка' }));
+    .catch((err) => {
+      if (err.name === 'ValidationError') {
+        return res.status(400).send({ message: 'Данные не валидны' });
+      }
+      return res.status(500).send({ message: 'Произошла ошибка' });
+    });
 };
 
 const deleteCard = (req, res) => Card.findByIdAndRemove(req.params.cardId)
-  .then((card) => res.status(200).send({ data: card }))
-  .catch(() => res.status(404).send({ message: 'Карточка не найдена' }));
+  .then((card) => {
+    if (!card) {
+      return res.status(404).send({ message: 'Карточка не найдена' });
+    }
+    return res.status(200).send({ data: card });
+  })
+  .catch(() => res.status(500).send({ message: 'Произошла ошибка' }));
 
 const likeCard = (req, res) => Card.findByIdAndUpdate(
   req.params.cardId,
@@ -27,7 +37,12 @@ const likeCard = (req, res) => Card.findByIdAndUpdate(
     }
     return res.status(200).send({ data: card });
   })
-  .catch(() => res.status(500).send({ message: 'Произошла ошибка' }));
+  .catch((err) => {
+    if (err.name === 'ValidationError') {
+      return res.status(400).send({ message: 'Данные не валидны' });
+    }
+    return res.status(500).send({ message: 'Произошла ошибка' });
+  });
 
 const dislikeCard = (req, res) => Card.findByIdAndUpdate(
   req.params.cardId,
