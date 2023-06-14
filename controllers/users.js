@@ -21,7 +21,12 @@ const createUser = (req, res) => {
 
   return User.create({ name, about, avatar })
     .then((newUser) => res.status(201).send(newUser))
-    .catch(() => res.status(500).send({ message: 'Server Error' }));
+    .catch((err) => {
+      if (err.name === 'ValidationError') {
+        return res.status(400).send({ message: 'Данные не валидны' });
+      }
+      return res.status(500).send({ message: 'Произошла ошибка' });
+    });
 };
 
 const editUser = (req, res) => {
