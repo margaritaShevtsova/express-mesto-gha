@@ -1,3 +1,4 @@
+/* eslint-disable no-else-return */
 const User = require('../models/users');
 
 const getUsers = (req, res) => User.find({}).then((users) => res.status(200).send(users))
@@ -16,8 +17,9 @@ const getUserById = (req, res) => {
     .catch((err) => {
       if (err.name === 'ValidationError') {
         return res.status(400).send({ message: 'Данные не валидны' });
+      } else {
+        return res.status(500).send({ message: 'Произошла ошибка' });
       }
-      return res.status(500).send({ message: 'Произошла ошибка' });
     });
 };
 
