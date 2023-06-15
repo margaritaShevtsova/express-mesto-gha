@@ -1,3 +1,4 @@
+/* eslint-disable no-else-return */
 const Card = require('../models/cards');
 
 const getCards = (req, res) => Card.find({}).then((cards) => res.status(200).send(cards))
@@ -12,8 +13,9 @@ const createCard = (req, res) => {
     .catch((err) => {
       if (err.name === 'ValidationError') {
         return res.status(400).send({ message: 'Данные не валидны' });
+      } else {
+        return res.status(500).send({ message: 'Произошла ошибка' });
       }
-      return res.status(500).send({ message: 'Произошла ошибка' });
     });
 };
 
@@ -24,7 +26,13 @@ const deleteCard = (req, res) => Card.findByIdAndRemove(req.params.cardId)
     }
     return res.status(200).send({ data: card });
   })
-  .catch(() => res.status(500).send({ message: 'Произошла ошибка' }));
+  .catch(() => {
+    if (req.params.cardId.length < 24) {
+      return res.status(400).send({ message: 'Данные не валидны' });
+    } else {
+      return res.status(500).send({ message: 'Произошла ошибка' });
+    }
+  });
 
 const likeCard = (req, res) => Card.findByIdAndUpdate(
   req.params.cardId,
@@ -38,10 +46,11 @@ const likeCard = (req, res) => Card.findByIdAndUpdate(
     return res.status(200).send({ data: card });
   })
   .catch((err) => {
-    if (err.name === 'ValidationError') {
+    if (err.name === 'ValidationError' || req.params.cardId < 24) {
       return res.status(400).send({ message: 'Данные не валидны' });
+    } else {
+      return res.status(500).send({ message: 'Произошла ошибка' });
     }
-    return res.status(500).send({ message: 'Произошла ошибка' });
   });
 
 const dislikeCard = (req, res) => Card.findByIdAndUpdate(
@@ -55,7 +64,13 @@ const dislikeCard = (req, res) => Card.findByIdAndUpdate(
     }
     return res.status(200).send({ data: card });
   })
-  .catch(() => res.status(500).send({ message: 'Произошла ошибка' }));
+  .catch((err) => {
+    if (err.name === 'ValidationError' || req.params.cardId < 24) {
+      return res.status(400).send({ message: 'Данные не валидны' });
+    } else {
+      return res.status(500).send({ message: 'Произошла ошибка' });
+    }
+  });
 
 module.exports = {
   getCards,
