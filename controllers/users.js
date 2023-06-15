@@ -15,7 +15,7 @@ const getUserById = (req, res) => {
       return res.status(200).send(user);
     })
     .catch((err) => {
-      if (err.name === 'ValidationError') {
+      if (err.name === 'ValidationError' || userId.length < 24) {
         return res.status(400).send({ message: 'Данные не валидны' });
       } else {
         return res.status(500).send({ message: 'Произошла ошибка' });
@@ -55,7 +55,6 @@ const editUser = (req, res) => {
     .catch((err) => {
       if (err.name === 'ValidationError') {
         return res.status(400).send({ message: 'Данные не валидны' });
-      // eslint-disable-next-line no-else-return
       } else {
         return res.status(500).send({ message: 'Произошла ошибка' });
       }
@@ -72,7 +71,6 @@ const editAvatar = (req, res) => {
     },
   )
     .then((user) => {
-      console.log(user);
       if (!user) {
         return res.status(404).send({ message: 'Пользователь не найден' });
       }
