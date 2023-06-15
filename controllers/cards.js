@@ -1,8 +1,9 @@
 /* eslint-disable no-else-return */
 const Card = require('../models/cards');
+const { INTERNAL_SERVER_ERROR, VALIDATION_ERROR, NOT_FOUND_ERROR } = require('../utils/constants');
 
-const getCards = (req, res) => Card.find({}).then((cards) => res.status(200).send(cards))
-  .catch(() => res.status(500).send({ message: 'Произошла ошибка' }));
+const getCards = (req, res) => Card.find({}).then((cards) => res.send(cards))
+  .catch(() => res.status(INTERNAL_SERVER_ERROR).send({ message: 'Произошла ошибка' }));
 
 const createCard = (req, res) => {
   const { name, link } = req.body;
@@ -12,9 +13,9 @@ const createCard = (req, res) => {
     .then((newCard) => res.status(201).send(newCard))
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        return res.status(400).send({ message: 'Данные не валидны' });
+        return res.status(VALIDATION_ERROR).send({ message: 'Данные не валидны' });
       } else {
-        return res.status(500).send({ message: 'Произошла ошибка' });
+        return res.status(INTERNAL_SERVER_ERROR).send({ message: 'Произошла ошибка' });
       }
     });
 };
@@ -22,15 +23,15 @@ const createCard = (req, res) => {
 const deleteCard = (req, res) => Card.findByIdAndRemove(req.params.cardId)
   .then((card) => {
     if (!card) {
-      return res.status(404).send({ message: 'Карточка не найдена' });
+      return res.status(NOT_FOUND_ERROR).send({ message: 'Карточка не найдена' });
     }
-    return res.status(200).send({ data: card });
+    return res.send({ data: card });
   })
-  .catch(() => {
-    if (req.params.cardId.length < 24) {
-      return res.status(400).send({ message: 'Данные не валидны' });
+  .catch((err) => {
+    if (err.name === 'CastError') {
+      return res.status(VALIDATION_ERROR).send({ message: 'Данные не валидны' });
     } else {
-      return res.status(500).send({ message: 'Произошла ошибка' });
+      return res.status(INTERNAL_SERVER_ERROR).send({ message: 'Произошла ошибка' });
     }
   });
 
@@ -41,15 +42,15 @@ const likeCard = (req, res) => Card.findByIdAndUpdate(
 )
   .then((card) => {
     if (!card) {
-      return res.status(404).send({ message: 'Карточка не найдена' });
+      return res.status(NOT_FOUND_ERROR).send({ message: 'Карточка не найдена' });
     }
-    return res.status(200).send({ data: card });
+    return res.send({ data: card });
   })
   .catch((err) => {
-    if (err.name === 'ValidationError' || req.params.cardId.length < 24) {
-      return res.status(400).send({ message: 'Данные не валидны' });
+    if (err.name === 'ValidationError' || err.name === 'CastError') {
+      return res.status(VALIDATION_ERROR).send({ message: 'Данные не валидны' });
     } else {
-      return res.status(500).send({ message: 'Произошла ошибка' });
+      return res.status(INTERNAL_SERVER_ERROR).send({ message: 'Произошла ошибка' });
     }
   });
 
@@ -60,15 +61,15 @@ const dislikeCard = (req, res) => Card.findByIdAndUpdate(
 )
   .then((card) => {
     if (!card) {
-      return res.status(404).send({ message: 'Карточка не найдена' });
+      return res.status(NOT_FOUND_ERROR).send({ message: 'Карточка не найдена' });
     }
-    return res.status(200).send({ data: card });
+    return res.send({ data: card });
   })
   .catch((err) => {
-    if (err.name === 'ValidationError' || req.params.cardId.length < 24) {
-      return res.status(400).send({ message: 'Данные не валидны' });
+    if (err.name === 'ValidationError' || err.name === 'CastError') {
+      return res.status(VALIDATION_ERROR).send({ message: 'Данные не валидны' });
     } else {
-      return res.status(500).send({ message: 'Произошла ошибка' });
+      return res.status(INTERNAL_SERVER_ERROR).send({ message: 'Произошла ошибка' });
     }
   });
 
