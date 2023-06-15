@@ -17,11 +17,15 @@ app.use(bodyParser.json());
 
 app.use((req, res, next) => {
   req.user = {
-    _id: '64887b9482b1ff09c11281bc',
+    _id: '648a37e2b9a70e60b2bf57a8',
   };
   next();
 });
 
 app.use(cardRouter, userRouter);
+
+app.get('*', (req, res) => {
+  res.status(404).send({ message: 'Такой страницы не существует' });
+});
 
 app.listen(PORT);
