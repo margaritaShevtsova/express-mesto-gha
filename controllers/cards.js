@@ -46,7 +46,7 @@ const likeCard = (req, res) => Card.findByIdAndUpdate(
     return res.status(200).send({ data: card });
   })
   .catch((err) => {
-    if (err.name === 'ValidationError' || req.params.cardId < 24) {
+    if (err.name === 'ValidationError' || req.params.cardId.length < 24) {
       return res.status(400).send({ message: 'Данные не валидны' });
     } else {
       return res.status(500).send({ message: 'Произошла ошибка' });
@@ -65,7 +65,7 @@ const dislikeCard = (req, res) => Card.findByIdAndUpdate(
     return res.status(200).send({ data: card });
   })
   .catch((err) => {
-    if (err.name === 'ValidationError' || req.params.cardId < 24) {
+    if (err.name === 'ValidationError' || req.params.cardId.length < 24) {
       return res.status(400).send({ message: 'Данные не валидны' });
     } else {
       return res.status(500).send({ message: 'Произошла ошибка' });
