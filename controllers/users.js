@@ -47,15 +47,21 @@ const getUser = (req, res, next) => User.findOne(req.user._id)
 
 const createUser = (req, res, next) => {
   const {
-    email, password, name, about, avatar,
+    email, password,
   } = req.body;
   return bcrypt.hash(password, 10)
     .then((hash) => {
       User.create({
-        email, password: hash, name, about, avatar,
+        email, password: hash, name: req.name, about: req.about, avatar: req.avatar,
       });
     })
-    .then((newUser) => res.status(201).send({ _id: newUser._id, email: newUser.email }))
+    .then((newUser) => res.status(201).send({
+      _id: newUser._id,
+      email: newUser.email,
+      name: newUser.name,
+      about: newUser.about,
+      avatar: newUser.avatar,
+    }))
     .catch((err) => {
       if (err.name === 'ValidationError') {
         next(new ValidationError('Данные не валидны'));

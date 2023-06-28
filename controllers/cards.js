@@ -24,15 +24,12 @@ const createCard = (req, res, next) => {
 
 const deleteCard = (req, res, next) => Card.findById(req.params.cardId)
   .then((card) => {
-    if (!req.user._id === card.owner._id) {
-      next(new ForbiddenError('Это не ваша карточка'));
-    }
-    return Card.findByIdAndRemove(req.params.cardId);
-  })
-  .then((card) => {
     if (!card) {
       next(new NotFoundError('Карточка не найдена'));
+    } else if (req.user._id !== card.owner._id) {
+      next(new ForbiddenError('Это не ваша карточка'));
     }
+    Card.findByIdAndRemove(req.params.cardId);
     return res.send({ data: card });
   })
   .catch((err) => {
