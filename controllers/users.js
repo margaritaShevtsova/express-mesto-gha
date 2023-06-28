@@ -55,7 +55,7 @@ const createUser = (req, res, next) => {
         email, password: hash, name, about, avatar,
       });
     })
-    .then((newUser) => res.status(201).send(newUser))
+    .then((newUser) => res.status(201).send({ _id: newUser._id, email: newUser.email }))
     .catch((err) => {
       if (err.name === 'ValidationError') {
         next(new ValidationError('Данные не валидны'));
