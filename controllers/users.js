@@ -52,7 +52,7 @@ const createUser = (req, res, next) => {
   return bcrypt.hash(password, 10)
     .then((hash) => {
       User.create({
-        email, password: hash, name: req.name, about: req.about, avatar: req.avatar,
+        email, password: hash, name: req.body.name, about: req.body.about, avatar: req.body.avatar,
       });
     })
     .then((newUser) => res.status(201).send({
