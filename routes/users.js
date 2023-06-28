@@ -9,12 +9,6 @@ router.get('/users', getUsers);
 
 router.get('./users/me', getUser);
 
-router.get('/users/:userId', celebrate({
-  params: Joi.object().keys({
-    userId: Joi.string().length(24),
-  }),
-}), getUserById);
-
 router.patch('/users/me', celebrate(
   {
     body: Joi.object().keys({
@@ -31,6 +25,12 @@ router.patch('/users/me/avatar', celebrate(
     }),
   },
 ), editAvatar);
+
+router.get('/users/:userId', celebrate({
+  params: Joi.object().keys({
+    userId: Joi.string().length(24),
+  }),
+}), getUserById);
 
 module.exports = router;
 
