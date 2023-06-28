@@ -17,7 +17,7 @@ const getUserById = (req, res, next) => {
   return User.findById(userId)
     .then((user) => {
       if (!user) {
-        throw new NotFoundError('Пользователь не найден');
+        next(new NotFoundError('Пользователь не найден'));
       }
       return res.send(user);
     })
@@ -33,7 +33,7 @@ const getUserById = (req, res, next) => {
 const getUser = (req, res, next) => User.findOne(req.user._id)
   .then((user) => {
     if (!user) {
-      throw new NotFoundError('Пользователь не найден');
+      next(new NotFoundError('Пользователь не найден'));
     }
     return res.send(user);
   })
