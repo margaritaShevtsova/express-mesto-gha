@@ -30,8 +30,8 @@ const deleteCard = (req, res, next) => Card.findById(req.params.cardId)
       next(new ForbiddenError('Это не ваша карточка'));
     }
     Card.findByIdAndRemove(req.params.cardId);
-    return res.send({ data: card });
   })
+  .then((card) => res.send({ data: card }))
   .catch((err) => {
     if (err.name === 'ValidationError' || err.name === 'CastError') {
       next(new ValidationError('Данные не валидны'));
