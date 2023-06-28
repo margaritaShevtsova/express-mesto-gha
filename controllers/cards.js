@@ -66,7 +66,7 @@ const dislikeCard = (req, res, next) => Card.findByIdAndUpdate(
 )
   .then((card) => {
     if (!card) {
-      next(new NotFoundError('Карточка не найдена'));
+      return next(new NotFoundError('Карточка не найдена'));
     }
     return res.send({ data: card });
   })
