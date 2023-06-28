@@ -11,6 +11,21 @@ const UnauthorizedError = require('../errors/unauthorized-err');
 const getUsers = (req, res, next) => User.find({}).then((users) => res.send(users))
   .catch(next);
 
+const getUser = (req, res, next) => User.findOne(req.user._id)
+  .then((user) => {
+    if (!user) {
+      next(new NotFoundError('Пользователь не найден'));
+    }
+    return res.send(user);
+  })
+  .catch((err) => {
+    if (err.name === 'ValidationError' || err.name === 'CastError') {
+      next(new ValidationError('Данные не валидны'));
+    } else {
+      next(err);
+    }
+  });
+
 const getUserById = (req, res, next) => {
   const { userId } = req.params;
 
@@ -29,21 +44,6 @@ const getUserById = (req, res, next) => {
       }
     });
 };
-
-const getUser = (req, res, next) => User.findOne(req.user._id)
-  .then((user) => {
-    if (!user) {
-      next(new NotFoundError('Пользователь не найден'));
-    }
-    return res.send(user);
-  })
-  .catch((err) => {
-    if (err.name === 'ValidationError' || err.name === 'CastError') {
-      next(new ValidationError('Данные не валидны'));
-    } else {
-      next(err);
-    }
-  });
 
 const createUser = (req, res, next) => {
   const {
@@ -147,10 +147,10 @@ const editAvatar = (req, res, next) => {
 
 module.exports = {
   getUsers,
+  getUser,
   getUserById,
   createUser,
   editUser,
   editAvatar,
   login,
-  getUser,
 };

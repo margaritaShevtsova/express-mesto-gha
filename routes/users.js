@@ -2,7 +2,7 @@ const router = require('express').Router();
 // eslint-disable-next-line import/no-extraneous-dependencies
 const { celebrate, Joi } = require('celebrate');
 const {
-  getUsers, getUserById, editUser, editAvatar, getUser,
+  getUsers, getUser, getUserById, editUser, editAvatar,
 } = require('../controllers/users');
 
 router.get('/users', getUsers);
