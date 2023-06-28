@@ -1,44 +1,99 @@
+/* eslint-disable import/no-extraneous-dependencies */
 /* eslint-disable no-else-return */
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
 const User = require('../models/users');
-const { INTERNAL_SERVER_ERROR, VALIDATION_ERROR, NOT_FOUND_ERROR } = require('../utils/constants');
+const ConflictError = require('../errors/conflict-err');
+const ValidationError = require('../errors/validation-err');
+const NotFoundError = require('../errors/not-found-err');
+const UnauthorizedError = require('../errors/unauthorized-err');
 
-const getUsers = (req, res) => User.find({}).then((users) => res.send(users))
-  .catch(() => res.status(INTERNAL_SERVER_ERROR).send({ message: 'Произошла ошибка' }));
+const getUsers = (req, res, next) => User.find({}).then((users) => res.send(users))
+  .catch(next);
 
-const getUserById = (req, res) => {
+const getUserById = (req, res, next) => {
   const { userId } = req.params;
 
   return User.findById(userId)
     .then((user) => {
       if (!user) {
-        return res.status(NOT_FOUND_ERROR).send({ message: 'Пользователь не найден' });
+        throw new NotFoundError('Пользователь не найден');
       }
       return res.send(user);
     })
     .catch((err) => {
       if (err.name === 'ValidationError' || err.name === 'CastError') {
-        return res.status(VALIDATION_ERROR).send({ message: 'Данные не валидны' });
+        next(new ValidationError('Данные не валидны'));
       } else {
-        return res.status(INTERNAL_SERVER_ERROR).send({ message: 'Произошла ошибка' });
+        next(err);
       }
     });
 };
 
-const createUser = (req, res) => {
-  const { name, about, avatar } = req.body;
+const getUser = (req, res, next) => User.findOne(req.user._id)
+  .then((user) => {
+    if (!user) {
+      throw new NotFoundError('Пользователь не найден');
+    }
+    return res.send(user);
+  })
+  .catch((err) => {
+    if (err.name === 'ValidationError' || err.name === 'CastError') {
+      next(new ValidationError('Данные не валидны'));
+    } else {
+      next(err);
+    }
+  });
 
-  return User.create({ name, about, avatar })
+const createUser = (req, res, next) => {
+  const {
+    email, password, name, about, avatar,
+  } = req.body;
+  return bcrypt.hash(password, 10)
+    .then((hash) => {
+      User.create({
+        email, password: hash, name, about, avatar,
+      });
+    })
     .then((newUser) => res.status(201).send(newUser))
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        return res.status(VALIDATION_ERROR).send({ message: 'Данные не валидны' });
+        next(new ValidationError('Данные не валидны'));
+      } else if (err.code === 11000) {
+        next(new ConflictError('Такой пользователь уже существует'));
       } else {
-        return res.status(INTERNAL_SERVER_ERROR).send({ message: 'Произошла ошибка' });
+        next(err);
       }
     });
 };
 
-const editUser = (req, res) => {
+const login = (req, res, next) => {
+  const { email, password } = req.body;
+  User.findOne({ email }).select('+password')
+    .then((user) => {
+      if (!user) {
+        next(new ValidationError('Неправильные почта или пароль'));
+      }
+
+      return bcrypt.compare(password, user.password)
+        .then((matched) => {
+          if (!matched) {
+            next(new ValidationError('Неправильные почта или пароль'));
+          }
+          const token = jwt.sign(
+            { _id: user._id },
+            'some-secret-key',
+            { expiresIn: '7d' },
+          );
+          return res.send({ token });
+        });
+    })
+    .catch(() => {
+      next(new UnauthorizedError('Ошибка авторизации'));
+    });
+};
+
+const editUser = (req, res, next) => {
   User.findByIdAndUpdate(
     req.user._id,
     req.body,
@@ -49,20 +104,20 @@ const editUser = (req, res) => {
   )
     .then((user) => {
       if (!user) {
-        return res.status(NOT_FOUND_ERROR).send({ message: 'Пользователь не найден' });
+        next(new NotFoundError('Пользователь не найден'));
       }
       return res.send({ data: user });
     })
     .catch((err) => {
-      if (err.name === 'ValidationError') {
-        return res.status(VALIDATION_ERROR).send({ message: 'Данные не валидны' });
+      if (err.name === 'ValidationError' || err.name === 'CastError') {
+        next(new ValidationError('Данные не валидны'));
       } else {
-        return res.status(INTERNAL_SERVER_ERROR).send({ message: 'Произошла ошибка' });
+        next(err);
       }
     });
 };
 
-const editAvatar = (req, res) => {
+const editAvatar = (req, res, next) => {
   User.findByIdAndUpdate(
     req.user._id,
     { avatar: req.body.avatar },
@@ -73,15 +128,15 @@ const editAvatar = (req, res) => {
   )
     .then((user) => {
       if (!user) {
-        return res.status(NOT_FOUND_ERROR).send({ message: 'Пользователь не найден' });
+        next(new NotFoundError('Пользователь не найден'));
       }
       return res.send({ data: user });
     })
     .catch((err) => {
-      if (err.name === 'ValidationError') {
-        return res.status(VALIDATION_ERROR).send({ message: 'Данные не валидны' });
+      if (err.name === 'ValidationError' || err.name === 'CastError') {
+        next(new ValidationError('Данные не валидны'));
       } else {
-        return res.status(INTERNAL_SERVER_ERROR).send({ message: 'Произошла ошибка' });
+        next(err);
       }
     });
 };
@@ -92,4 +147,6 @@ module.exports = {
   createUser,
   editUser,
   editAvatar,
+  login,
+  getUser,
 };
