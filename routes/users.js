@@ -5,9 +5,9 @@ const {
   getUsers, getUser, getUserById, editUser, editAvatar,
 } = require('../controllers/users');
 
-router.get('/users', getUsers);
-
 router.get('./users/me', getUser);
+
+router.get('/users', getUsers);
 
 router.patch('/users/me', celebrate(
   {
@@ -33,5 +33,3 @@ router.patch('/users/me/avatar', celebrate(
 ), editAvatar);
 
 module.exports = router;
-
-// .pattern(/^https?:\/\/(www\.)?[-a-zA-Z0-9-._~:/?#@!$&'()*+,;=\W/]{1,256}#?/),
