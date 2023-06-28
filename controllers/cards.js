@@ -29,7 +29,7 @@ const deleteCard = (req, res, next) => Card.findById(req.params.cardId)
     } else if (!card.owner.equals(req.user._id)) {
       next(new ForbiddenError('Это не ваша карточка'));
     }
-    Card.findByIdAndRemove(req.params.cardId);
+    return Card.findByIdAndRemove(req.params.cardId);
   })
   .then((card) => res.send({ data: card }))
   .catch((err) => {
