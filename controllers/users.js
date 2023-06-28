@@ -11,7 +11,7 @@ const UnauthorizedError = require('../errors/unauthorized-err');
 const getUsers = (req, res, next) => User.find({}).then((users) => res.send(users))
   .catch(next);
 
-const getUser = (req, res, next) => User.findOne(req.user._id)
+const getUser = (req, res, next) => User.findById(req.user._id)
   .then((user) => {
     if (!user) {
       return next(new NotFoundError('Пользователь не найден'));
