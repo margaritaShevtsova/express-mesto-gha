@@ -47,7 +47,7 @@ app.use(cardRouter, userRouter);
 
 app.use(errors());
 
-app.use('*', (req, res, next) => next(NotFoundError('Такой страницы не существует')));
+app.use('*', (req, res, next) => next(new NotFoundError('Такой страницы не существует')));
 
 app.use(errorHandler);
 
