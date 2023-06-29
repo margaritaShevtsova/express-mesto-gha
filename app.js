@@ -1,16 +1,13 @@
 const express = require('express');
-// eslint-disable-next-line import/no-extraneous-dependencies
 const helmet = require('helmet');
-// eslint-disable-next-line import/no-extraneous-dependencies
-const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
-// eslint-disable-next-line import/no-extraneous-dependencies
 const { celebrate, Joi, errors } = require('celebrate');
 const auth = require('./middlewares/auth');
 const cardRouter = require('./routes/cards');
 const userRouter = require('./routes/users');
 const { login, createUser } = require('./controllers/users');
 const { errorHandler } = require('./middlewares/errorHandler');
+const NotFoundError = require('./errors/not-found-err');
 
 const { PORT = 3000 } = process.env;
 
@@ -22,7 +19,7 @@ mongoose.connect('mongodb://localhost:27017/mestodb', {
 
 app.use(helmet());
 
-app.use(bodyParser.json());
+app.use(express.json());
 
 app.post('/signin', celebrate(
   {
@@ -48,11 +45,9 @@ app.use(auth);
 
 app.use(cardRouter, userRouter);
 
+app.use('*', (req, res, next) => next(NotFoundError('Такой страницы не существует')));
+
 app.use(errors());
 app.use(errorHandler);
-
-app.use('*', (req, res) => {
-  res.status(404).send({ message: 'Такой страницы не существует' });
-});
 
 app.listen(PORT);

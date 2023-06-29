@@ -19,11 +19,7 @@ const getUser = (req, res, next) => User.findById(req.user._id)
     return res.send(user);
   })
   .catch((err) => {
-    if (err.name === 'ValidationError' || err.name === 'CastError') {
-      next(new ValidationError('Данные не валидны'));
-    } else {
-      next(err);
-    }
+    next(err);
   });
 
 const getUserById = (req, res, next) => {
@@ -37,7 +33,7 @@ const getUserById = (req, res, next) => {
       return res.send(user);
     })
     .catch((err) => {
-      if (err.name === 'ValidationError' || err.name === 'CastError') {
+      if (err.name === 'CastError') {
         next(new ValidationError('Данные не валидны'));
       } else {
         next(err);
@@ -76,13 +72,13 @@ const login = (req, res, next) => {
   User.findOne({ email }).select('+password')
     .then((user) => {
       if (!user) {
-        next(new UnauthorizedError('Неправильные почта или пароль'));
+        return next(new UnauthorizedError('Неправильные почта или пароль'));
       }
 
       return bcrypt.compare(password, user.password)
         .then((matched) => {
           if (!matched) {
-            next(new ValidationError('Неправильные почта или пароль'));
+            return next(new ValidationError('Неправильные почта или пароль'));
           }
           const token = jwt.sign(
             { _id: user._id },
@@ -92,8 +88,8 @@ const login = (req, res, next) => {
           return res.send({ token });
         });
     })
-    .catch(() => {
-      next(new UnauthorizedError('Ошибка авторизации'));
+    .catch((err) => {
+      next(err);
     });
 };
 
@@ -113,7 +109,7 @@ const editUser = (req, res, next) => {
       return res.send({ data: user });
     })
     .catch((err) => {
-      if (err.name === 'ValidationError' || err.name === 'CastError') {
+      if (err.name === 'ValidationError') {
         next(new ValidationError('Данные не валидны'));
       } else {
         next(err);
@@ -137,7 +133,7 @@ const editAvatar = (req, res, next) => {
       return res.send({ data: user });
     })
     .catch((err) => {
-      if (err.name === 'ValidationError' || err.name === 'CastError') {
+      if (err.name === 'ValidationError') {
         next(new ValidationError('Данные не валидны'));
       } else {
         next(err);

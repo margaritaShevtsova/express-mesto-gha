@@ -14,7 +14,7 @@ const createCard = (req, res, next) => {
   return Card.create({ name, link, owner })
     .then((newCard) => res.status(201).send(newCard))
     .catch((err) => {
-      if (err.name === 'ValidationError' || err.name === 'CastError') {
+      if (err.name === 'ValidationError') {
         next(new ValidationError('Данные не валидны'));
       } else {
         next(err);
@@ -29,11 +29,11 @@ const deleteCard = (req, res, next) => Card.findById(req.params.cardId)
     } else if (!card.owner.equals(req.user._id)) {
       next(new ForbiddenError('Это не ваша карточка'));
     }
-    return Card.findByIdAndRemove(req.params.cardId);
+    return Card.deleteOne(card._id);
   })
   .then((card) => res.send({ data: card }))
   .catch((err) => {
-    if (err.name === 'ValidationError' || err.name === 'CastError') {
+    if (err.name === 'CastError') {
       next(new ValidationError('Данные не валидны'));
     } else {
       next(err);
@@ -52,7 +52,7 @@ const likeCard = (req, res, next) => Card.findByIdAndUpdate(
     return res.send({ data: card });
   })
   .catch((err) => {
-    if (err.name === 'ValidationError' || err.name === 'CastError') {
+    if (err.name === 'CastError') {
       next(new ValidationError('Данные не валидны'));
     } else {
       next(err);
@@ -71,7 +71,7 @@ const dislikeCard = (req, res, next) => Card.findByIdAndUpdate(
     return res.send({ data: card });
   })
   .catch((err) => {
-    if (err.name === 'ValidationError' || err.name === 'CastError') {
+    if (err.name === 'CastError') {
       next(new ValidationError('Данные не валидны'));
     } else {
       next(err);
